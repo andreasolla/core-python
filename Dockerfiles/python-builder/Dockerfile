@@ -65,4 +65,4 @@ RUN cd ${IGNIS_HOME}/opt/go/ &&\
     go build -o libhdfsExplorer.so -buildmode=c-shared hdfsExplorer.go && \
     cp libhdfsExplorer.so ${IGNIS_HOME}/core/python/ && \
     mkdir -p ${IGNIS_HOME}/core/python/hdfs/hdfs_conf_dir
-#COPY ${RELPATH}hdfs_conf ${IGNIS_HOME}/core/python/hdfs/hdfs_conf_dir
+

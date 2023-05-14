@@ -58,6 +58,9 @@ class IPropertyParser:
 	def executorDirectory(self):
 		return self.getString("ignis.executor.directory")
 
+	def hdfsPreserveOrder(self):
+		return self.getBoolean("ignis.hdfs.preserve.order")
+
 	# Auxiliary functions
 	def getString(self, key):
 		if key in self.__properties:
