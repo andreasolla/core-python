@@ -89,11 +89,10 @@ class IIOImpl(IBaseImpl):
         fpath = "/" + "/".join(path.split("/")[2:])
 
         logger.info("IO: connecting to HDFS at " + host + " and reading file " + fpath)
-        # Conexion con HDFS y lectura del fichero
+        # Conexion con HDFS 
         if lib.NewHdfsClient(host) < 0:
             raise Exception("IO: error connecting to HDFS at " + host)
         
-        #readChunk = createReader(file)
         size = lib.Size(fpath)
         executorId = self._executor_data.getContext().executorId()
         executors = self._executor_data.getContext().executors()
@@ -140,17 +139,14 @@ class IIOImpl(IBaseImpl):
                 partitionInit = filepos
 
             bb = lib.ReadLine(file)
-            logger.info("IO: read line " + str(bb))
-            # if bb is None:
-            #     break
-            # else:
+
             if bb[-len(delim):] == delim:
                 write_iterator.write(bb[:-len(delim)].decode("utf-8"))
             else:
                 write_iterator.write(bb.decode("utf-8"))
             elements += 1
             filepos += len(bb)
-        ex_chunk_end = filepos #file.tell()
+        ex_chunk_end = filepos 
 
         logger.info("IO: created  " + str(len(partitionGroup)) + " partitions, " + str(elements) + " lines and " +
                     str(ex_chunk_end - ex_chunk_init) + " Bytes read ")
@@ -178,7 +174,6 @@ class IIOImpl(IBaseImpl):
         # Comunicacion con los demas ejecutores para repartir los bloques
         myBlocks = [executorId, executorBlocks]
         allBlocks = self._executor_data.getContext().mpiGroup().allgather(myBlocks)
-
         sorted_data = sorted(allBlocks, key=lambda x: x[0])
         
         # Reparto de bloques por IP
@@ -216,7 +211,7 @@ class IIOImpl(IBaseImpl):
             while len(assignedBlocks) < blocksPerExecutor and len(lostBlocks) > 0:
                 assignedBlocks[lostBlocks[i].BlockID] = lostBlocks[i]
                 i += 1
-            
+        
         return assignedBlocks
     
     def __hdfsNotOrdering(self, path):
@@ -279,6 +274,10 @@ class IIOImpl(IBaseImpl):
             
             partitionGroup.add(partition)
         
+        # Cierre de la conexion con HDFS
+        lib.Close(file, 'r')
+        lib.CloseConnection()
+
         logger.info("IO: created  " + str(len(partitionGroup)) + " partitions, " + str(elements) + " lines")
         
 
@@ -412,7 +411,7 @@ class IIOImpl(IBaseImpl):
         logger.info("IO: saving as hdfs text file")
         group = self._executor_data.getAndDeletePartitions()
 
-        host = self._executor_data.getContext().props()["ignis.hdfs.namenode"] # path.split("/")[2]
+        host = self._executor_data.getContext().props()["ignis.hdfs.namenode"]
         fpath = "/" + "/".join(path.split("/")[2:])
 
         logger.info("IO: connecting to HDFS at " + host)
@@ -426,6 +425,7 @@ class IIOImpl(IBaseImpl):
                 lib.Write(file, str(elem))
             group[i] = None
             lib.Close(file, 'w')
+        
         lib.CloseConnection()
         
     def saveAsTextFile(self, path, first):
