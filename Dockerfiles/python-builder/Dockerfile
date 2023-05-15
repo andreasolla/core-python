@@ -62,6 +62,5 @@ RUN tar -xzf go1.20.3.linux-amd64.tar.gz && \
 ENV PATH=$PATH:/${IGNIS_HOME}/opt/go/go/bin
 RUN cd ${IGNIS_HOME}/opt/go/ &&\
     go build -o libhdfsExplorer.so -buildmode=c-shared hdfsExplorer.go && \
-    cp libhdfsExplorer.so ${IGNIS_HOME}/core/python/ && \
-    mkdir -p ${IGNIS_HOME}/core/python/hdfs/hdfs_conf_dir
+    cp libhdfsExplorer.so ${IGNIS_HOME}/core/python/
 
