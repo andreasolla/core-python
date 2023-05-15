@@ -53,7 +53,6 @@ ADD https://dlcdn.apache.org/hadoop/common/hadoop-3.3.1/hadoop-3.3.1.tar.gz hado
 RUN tar -xzvf hadoop-3.3.1.tar.gz && \
     cp -R hadoop-3.3.1 ${IGNIS_HOME}/core/python/hdfs/
 
-#COPY ${RELPATH}libhdfsExplorer.so ${IGNIS_HOME}/core/python/
 COPY ${RELPATH}hdfsExplorer/go.mod ${IGNIS_HOME}/opt/go/
 COPY ${RELPATH}hdfsExplorer/go.sum ${IGNIS_HOME}/opt/go/
 COPY ${RELPATH}hdfsExplorer/hdfsExplorer.go ${IGNIS_HOME}/opt/go/
