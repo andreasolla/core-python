@@ -51,16 +51,23 @@ COPY / ${IGNIS_HOME}/core/python
 
 ADD https://dlcdn.apache.org/hadoop/common/hadoop-3.3.1/hadoop-3.3.1.tar.gz hadoop-3.3.1.tar.gz
 RUN tar -xzvf hadoop-3.3.1.tar.gz && \
-    cp -R hadoop-3.3.1 ${IGNIS_HOME}/core/python/hdfs/
+    cp -R hadoop-3.3.1 ${IGNIS_HOME}/core/python/hdfs/ && \
+	rm -fR hadoop-3.3.1.tar.gz
 
-COPY ${RELPATH}hdfsExplorer/go.mod ${IGNIS_HOME}/opt/go/
-COPY ${RELPATH}hdfsExplorer/go.sum ${IGNIS_HOME}/opt/go/
-COPY ${RELPATH}hdfsExplorer/hdfsExplorer.go ${IGNIS_HOME}/opt/go/
-ADD https://go.dev/dl/go1.20.3.linux-amd64.tar.gz go1.20.3.linux-amd64.tar.gz
-RUN tar -xzf go1.20.3.linux-amd64.tar.gz && \
-    mv go ${IGNIS_HOME}/opt/go
+COPY ${RELPATH}hdfsExplorer/go.mod /tmp/go/
+COPY ${RELPATH}hdfsExplorer/go.sum /tmp/go/
+COPY ${RELPATH}hdfsExplorer/hdfsExplorer.go /tmp/go/
+
+ENV GO_VERSION=go1.20.4
+RUN cd ${IGNIS_HOME} && \
+	mkdir -p opt/go && \
+	cd opt/go && \
+	(wget https://go.dev/dl/${GO_VERSION}.linux-$(dpkg --print-architecture).tar.gz -O golang.tar.gz || \ 
+	wget https://go.dev/dl/${GO_VERSION}.linux-$(uname -m).tar.gz -O golang.tar.gz) && \
+	tar -xvzf  golang.tar.gz && \
+	rm -fR golang.tar.gz
 ENV PATH=$PATH:/${IGNIS_HOME}/opt/go/go/bin
-RUN cd ${IGNIS_HOME}/opt/go/ &&\
+RUN cd /tmp/go/ &&\
     go build -o libhdfsExplorer.so -buildmode=c-shared hdfsExplorer.go && \
     cp libhdfsExplorer.so ${IGNIS_HOME}/core/python/
 

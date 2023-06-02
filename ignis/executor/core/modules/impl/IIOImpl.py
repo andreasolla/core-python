@@ -166,9 +166,7 @@ class IIOImpl(IBaseImpl):
         notAsignedBlocks = dict()
         for i in range(len(blocks)):
             notAsignedBlocks[blocks[i].BlockID] = blocks[i]
-            logger.info("IO: block " + str(blocks[i].IpAddr) + " vs " + str("b'" + executorIP + "'"))
             if blocks[i].IpAddr == executorIP:
-                logger.info("ha entrado")
                 executorBlocks.append(blocks[i])
 
         # Comunicacion con los demas ejecutores para repartir los bloques
@@ -204,11 +202,11 @@ class IIOImpl(IBaseImpl):
         if len(assignedBlocks) < blocksPerExecutor and len(lostBlocks) > 0:
             executor = 0
             i = 0
-            while executor < executorId and len(lostBlocks) > 0:
+            while executor < executorId and len(lostBlocks) > i:
                 i += blocksPerExecutor - numberBlocks[executor]
                 executor += 1
             
-            while len(assignedBlocks) < blocksPerExecutor and len(lostBlocks) > 0:
+            while len(assignedBlocks) < blocksPerExecutor and len(lostBlocks) > i:
                 assignedBlocks[lostBlocks[i].BlockID] = lostBlocks[i]
                 i += 1
         

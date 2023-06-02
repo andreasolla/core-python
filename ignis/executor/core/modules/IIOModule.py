@@ -110,7 +110,6 @@ class IIOModule(IModule, IIOModuleIface):
 
 	def saveAsTextFile(self, path, first):
 		try:
-
 			if(path.startswith("hdfs://")):
 				self.__impl.saveAsHdfsTextFile(path, first)
 			else:
