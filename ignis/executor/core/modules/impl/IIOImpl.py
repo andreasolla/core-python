@@ -278,7 +278,6 @@ class IIOImpl(IBaseImpl):
 
         logger.info("IO: created  " + str(len(partitionGroup)) + " partitions, " + str(elements) + " lines")
         
-
     def plainFile(self, path, minPartitions=1, delim='\n'):
         logger.info("IO: reading plain file")
         exs = list()

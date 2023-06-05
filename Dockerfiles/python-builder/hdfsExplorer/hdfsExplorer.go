@@ -10,7 +10,6 @@ typedef struct {
 */
 import "C"
 import (
-	"fmt"
 	"reflect"
 	"strings"
 	"sync"
@@ -101,7 +100,6 @@ func NewHdfsClient(hostPath *C.char) int {
 		hp := C.GoString(hostPath)
 		c, err := hdfs.New(hp)
 		if err != nil {
-			fmt.Println(err)
 			return -1
 		}
 		connected_client.client = c
@@ -143,31 +141,38 @@ func Open(filePath *C.char, mode int) int {
 
 		position := readfilemap_code.AddAndGet()
 		read_files.Put(position, file)
-		prueba, _ := read_files.Get(position)
-		p := prueba.(*hdfs.FileReader)
-		fmt.Println(p)
 		return position
 	} else {
-		f, err := connected_client.client.Stat(fp)
-		writer := new(hdfs.FileWriter)
+		f, _ := connected_client.client.Stat(fp)
 
 		if f != nil {
-			writer, err = connected_client.client.Append(fp)
+			writer, err := connected_client.client.Append(fp)
+			if err != nil {
+				return -1
+			}
+
+			position := writefilemap_code.AddAndGet()
+			write_files.Put(position, writer)
+			return position
 		} else {
 			dir := strings.Split(fp, "/")
 			dir = dir[:len(dir)-1]
 			dirpath := strings.Join(dir, "/") + "/"
-			_ = connected_client.client.MkdirAll(dirpath, 0777)
-			writer, err = connected_client.client.Create(fp)
-		}
 
-		if err != nil {
-			return -1
-		}
+			err := connected_client.client.MkdirAll(dirpath, 0777)
+			if err != nil {
+				return -1
+			}
 
-		position := writefilemap_code.AddAndGet()
-		write_files.Put(position, writer)
-		return position
+			writer, err := connected_client.client.Create(fp)
+			if err != nil {
+				return -1
+			}
+
+			position := writefilemap_code.AddAndGet()
+			write_files.Put(position, writer)
+			return position
+		}
 	}
 }
 
@@ -207,10 +212,9 @@ func Close(file int, mode int) int {
 //export GetBlockInfo
 func GetBlockInfo(file int, size *C.int) *C.BlockInfo {
 	f, _ := read_files.Get(file)
-	fmt.Println(f)
+
 	if f != nil {
 		f := f.(*hdfs.FileReader)
-		fmt.Println("GetBlocks")
 		blocks, err := f.GetBlocks()
 
 		if err != nil {
@@ -218,27 +222,18 @@ func GetBlockInfo(file int, size *C.int) *C.BlockInfo {
 		}
 
 		blockInfos := make([]BlockInfoGo, len(blocks))
-		fmt.Println(len(blocks))
+
 		for i, block := range blocks {
 			ip := block.GetIpAddr()[0]
-			fmt.Println(ip)
-			fmt.Println(block.GetBlockId())
-			fmt.Println(block.GetNumBytes())
 			blockInfos[i] = BlockInfoGo{BlockId: int(block.GetBlockId()), NumBytes: int(block.GetNumBytes()), IpAddr: C.CString(ip)}
 		}
 
 		array := (*C.BlockInfo)(C.malloc(C.size_t(len(blockInfos)) * C.size_t(unsafe.Sizeof(C.BlockInfo{}))))
-		fmt.Println(len(blockInfos))
 		for i, item := range blockInfos {
 			ptr := (*C.BlockInfo)(unsafe.Pointer(uintptr(unsafe.Pointer(array)) + uintptr(i)*unsafe.Sizeof(C.BlockInfo{})))
 			ptr.blockid = C.int(item.BlockId)
 			ptr.numbytes = C.int(item.NumBytes)
 			ptr.ipaddr = item.IpAddr
-
-			fmt.Println(ptr.blockid)
-			fmt.Println(ptr.numbytes)
-			fmt.Println(ptr.ipaddr)
-			fmt.Println(item.IpAddr)
 		}
 
 		*size = C.int(len(blockInfos))
@@ -283,7 +278,6 @@ func ReadLine(file int) *C.char {
 
 		return line
 	}
-
 	return nil
 }
 
@@ -316,7 +310,7 @@ func Size(filePath *C.char) int64 {
 func Write(file int, line *C.char) int {
 	f, _ := write_files.Get(file)
 
-	data := []byte(C.GoString(line) + "\n")
+	data := []byte(C.GoString(line))
 	if f != nil {
 		f := f.(*hdfs.FileWriter)
 		_, err := f.Write(data)

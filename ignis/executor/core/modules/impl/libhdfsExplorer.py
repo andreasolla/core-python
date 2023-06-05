@@ -66,4 +66,4 @@ def Size(path):
 def Write(file, line):
     hdfs_lib.Write.argtypes = [ctypes.c_int, ctypes.c_char_p]
     hdfs_lib.Write.restype = ctypes.c_int
-    return hdfs_lib.Write(file , ctypes.c_char_p(line.encode('utf-8')))
+    return hdfs_lib.Write(file , ctypes.c_char_p((line + "\n").encode('utf-8')))
