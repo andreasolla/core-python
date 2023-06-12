@@ -94,6 +94,8 @@ class IIOImpl(IBaseImpl):
             raise Exception("IO: error connecting to HDFS at " + host)
         
         size = lib.Size(fpath)
+        if size < 0:
+            raise Exception("IO: error reading file " + fpath)
         executorId = self._executor_data.getContext().executorId()
         executors = self._executor_data.getContext().executors()
         ex_chunk = int(size / executors)
@@ -225,6 +227,8 @@ class IIOImpl(IBaseImpl):
             raise Exception("IO: error connecting to HDFS at " + host)
         
         file = lib.Open(fpath, "r")
+        if file < 0:
+            raise Exception("IO: error reading file " + fpath)
         blocks = lib.GetBlocks(file)
         blocksToRead = self.__assignedBlocks(blocks)
 
@@ -412,11 +416,14 @@ class IIOImpl(IBaseImpl):
         fpath = "/" + "/".join(path.split("/")[2:])
 
         logger.info("IO: connecting to HDFS at " + host)
-        lib.NewHdfsClient(host)
+        if lib.NewHdfsClient(host) < 0:
+            raise Exception("Failed to connect to HDFS at " + host)
 
         for i in range(len(group)):
             file_name = self.__partitionFileName(fpath, first + i)
             file = lib.Open(file_name, "w")
+            if file < 0:
+                raise Exception("Failed to open HDFS file " + file_name)
             logger.info("IO: saving hdfs text file " + file_name)
             for elem in group[i]:
                 lib.Write(file, str(elem))
