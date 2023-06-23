@@ -60,7 +60,7 @@ def Seek(file, offset, whence):
 
 def Size(path):
     hdfs_lib.Size.argtypes = [ctypes.c_char_p]
-    hdfs_lib.Size.restype = ctypes.c_int
+    hdfs_lib.Size.restype = ctypes.c_int64
     return hdfs_lib.Size(ctypes.c_char_p(path.encode('utf-8')))
 
 def Write(file, line):
