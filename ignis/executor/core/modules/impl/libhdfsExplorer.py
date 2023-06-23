@@ -54,7 +54,7 @@ def ReadLine(file):
     return hdfs_lib.ReadLine(file)
 
 def Seek(file, offset, whence):
-    hdfs_lib.Seek.argtypes = [ctypes.c_int, ctypes.c_int, ctypes.c_int]
+    hdfs_lib.Seek.argtypes = [ctypes.c_int, ctypes.c_int64, ctypes.c_int]
     hdfs_lib.Seek.restype = ctypes.c_int
     return hdfs_lib.Seek(file, offset, whence)
 

@@ -268,12 +268,12 @@ func ReadLine(file int) *C.char {
 
 	if f != nil {
 		f := f.(*hdfs.FileReader)
-		offset := offset.(int)
+		offset := offset.(int64)
 
-		l, _ := f.ReadLine(int64(offset))
+		l, _ := f.ReadLine(offset)
 		line := C.CString(l + "\n")
 		
-		pos := offset + len(l) + 1
+		pos := offset + int64(len(l)) + 1
 		
 		positions.Put(file, pos)
 		
@@ -283,7 +283,7 @@ func ReadLine(file int) *C.char {
 }
 
 //export Seek
-func Seek(file int, offset int, whence int) int {
+func Seek(file int, offset int64, whence int) int {
 	f, _ := read_files.Get(file)
 	if f != nil {
 		positions.Put(file, offset)
