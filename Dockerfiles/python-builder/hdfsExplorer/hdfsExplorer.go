@@ -14,6 +14,7 @@ import (
 	"strings"
 	"sync"
 	"unsafe"
+
 	"github.com/andreasolla/hdfs/v2"
 )
 
@@ -261,22 +262,22 @@ func FreeBlockInfo(array *C.BlockInfo, size int) {
 func ReadLine(file int) *C.char {
 	f, _ := read_files.Get(file)
 	offset, _ := positions.Get(file)
-	
+
 	if offset == nil {
-		offset = 0
+		offset = int64(0)
 	}
 
 	if f != nil {
 		f := f.(*hdfs.FileReader)
-		offset := offset.(int64)
+		actualOffset := offset.(int64)
 
-		l, _ := f.ReadLine(offset)
+		l, _ := f.ReadLine(actualOffset)
 		line := C.CString(l + "\n")
-		
-		pos := offset + int64(len(l)) + 1
-		
+
+		pos := actualOffset + int64(len(l)+1)
+
 		positions.Put(file, pos)
-		
+
 		return line
 	}
 	return nil
